@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+  
+<mapper namespace="PerformScheduleBBS">
+
+	<select id="getPerformSchedulPagingList" parameterType="kh.com.a.model.Param" resultType="kh.com.a.model.PerformScheduleBBSDto">
+		SELECT A.NEW_CONSERTIMG, A.PERFORM_SCHEDULE_SEQ, A.TITLE
+		FROM (SELECT ROW_NUMBER() OVER(ORDER BY PERFORM_SCHEDULE_SEQ DESC) AS RNUM, NEW_CONSERTIMG,PERFORM_SCHEDULE_SEQ,TITLE
+		FROM PERFORM_SCHEDULEBBS WHERE 1=1 
+		<if test="s_category != '' and s_category != null and s_keyword != '' and s_keyword != null">
+			<if test = "s_category == 'title'">
+				AND TITLE LIKE '%'||#{s_keyword}||'%' 
+			</if>
+		</if>) A 
+		WHERE RNUM BETWEEN ${start} AND ${end} 
+	</select>
+	
+
+	<select id="getPerformScheduleBBSCount" parameterType="kh.com.a.model.Param" resultType="java.lang.Integer">
+		SELECT NVL(COUNT(*), 0) AS CNT FROM PERFORM_SCHEDULEBBS WHERE 1=1
+		<if test="s_category != '' and s_category != null and s_keyword != '' and s_keyword != null">
+			<if test = "s_category == 'title'">
+				AND TITLE LIKE '%'||#{s_keyword}||'%' 
+			</if>
+		</if>
+	</select>
+	
+	<select id="getPerformScheduleBBSDto" parameterType="java.lang.Integer" resultType="kh.com.a.model.PerformScheduleBBSDto">
+		SELECT * FROM PERFORM_SCHEDULEBBS WHERE PERFORM_SCHEDULE_SEQ=#{perform_schedule_seq}
+	</select>
+	
+	<insert id="addPerformSchedule" parameterType="kh.com.a.model.PerformScheduleBBSDto">
+		INSERT INTO PERFORM_SCHEDULEBBS(TICKET_PRICE, ORI_CONSERTIMG, NEW_CONSERTIMG, PERFORM_SCHEDULE_SEQ, PERFORM_SEQ, TITLE, NOTICE, CONSERT_INFO)
+		VALUES(#{ticket_price},#{ori_consertIMG},#{new_consertIMG},PERFORM_SCHEDULE_SEQ.NEXTVAL,#{perform_seq},#{title},#{notice},#{consert_info})
+	</insert>
+	
+	<select id="getPerformScheduleSeqMax" resultType="java.lang.Integer">
+		SELECT MAX(PERFORM_SCHEDULE_SEQ) FROM PERFORM_SCHEDULEBBS
+	</select>
+	
+	<select id="latelyPerformSchedules" resultType="kh.com.a.model.PerformScheduleBBSDto">
+		SELECT PS.* FROM PERFORM_SCHEDULEBBS PS, PERFORM_CAST_BBS PC
+		WHERE PS.PERFORM_SEQ = PC.PERFORM_SEQ ORDER BY PC.PERFORM_DATE ASC	
+	</select>
+	
+		
+</mapper>

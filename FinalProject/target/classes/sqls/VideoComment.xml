@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+  
+<mapper namespace="VideoComment">
+	<insert id="addComment" parameterType="kh.com.a.model.Video_CommentDto">
+		INSERT INTO VIDEO_COMMENT(VCOMMENT_SEQ, VIDEO_SEQ, ID, VCOMMENT, WDATE)
+		VALUES(VCOMMENT_SEQ.NEXTVAL, #{video_seq}, #{id}, #{vcomment}, SYSDATE)
+	</insert>
+	
+	<select id="getCommentList" resultType="kh.com.a.model.Video_CommentDto">
+		SELECT VCOMMENT_SEQ, VIDEO_SEQ, ID, VCOMMENT, WDATE
+		FROM VIDEO_COMMENT
+		WHERE VIDEO_SEQ=#{video_seq}
+		ORDER BY VCOMMENT_SEQ ASC
+	</select>
+</mapper>

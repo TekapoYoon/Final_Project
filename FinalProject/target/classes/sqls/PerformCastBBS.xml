@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+  
+<mapper namespace="PerformCastBBS">
+
+	<insert id="sendCompanyInfo" parameterType="kh.com.a.model.PerformCastBBSDto">
+		INSERT INTO PERFORM_CAST_BBS(PERFORM_SEQ,NAME,COMPNAME,EMAIL,PHONE,PLACE,PRICE,
+		 LOCATION,TOTALCOUNT,AGEGRADE,CONTENT,APPROVAL,WDATE,LATI,LONGI,PERFORM_DATE)
+	    VALUES(PERFORM_SEQ.NEXTVAL, #{name}, #{compname}, #{email}, 
+	    #{phone}, #{place}, #{price}, #{location}, #{totalcount}, 
+	    #{agegrade}, #{content}, 0, SYSDATE, #{lati}, #{longi}, TO_DATE(#{perform_date}))
+	</insert>
+	
+	<!-- APPROVAL = 1(승인) // 0(미승인) -->
+	<select id="getCastBbs" resultType="kh.com.a.model.PerformCastBBSDto">
+		
+		SELECT *
+		FROM(
+		SELECT ROWNUM AS RNUM, PERFORM_SEQ, NAME, COMPNAME, EMAIL, PHONE, PLACE, PRICE, LOCATION, TOTALCOUNT, AGEGRADE, CONTENT, APPROVAL, TO_CHAR(WDATE, 'YYYY-MM-DD HH24:MM') WDATE, TO_CHAR(PERFORM_DATE, 'YYYY-MM-DD') PERFORM_DATE
+		FROM(
+		SELECT * FROM PERFORM_CAST_BBS WHERE APPROVAL = 0 AND SYSDATE <![CDATA[<]]> PERFORM_DATE ORDER BY PERFORM_SEQ 
+		)) WHERE RNUM BETWEEN 1 AND 7 ORDER BY RNUM
+	</select>
+	
+	<select id="getMoreList" parameterType="kh.com.a.model.PerformCastBBSDto" resultType="kh.com.a.model.PerformCastBBSDto">
+		SELECT *
+		FROM(
+		SELECT ROWNUM AS RNUM, PERFORM_SEQ, NAME, COMPNAME, EMAIL, PHONE, PLACE, PRICE, LOCATION, TOTALCOUNT, AGEGRADE, CONTENT, APPROVAL, TO_CHAR(WDATE, 'YYYY-MM-DD HH24:MM') WDATE, TO_CHAR(PERFORM_DATE, 'YYYY-MM-DD') PERFORM_DATE
+		FROM(
+		SELECT * FROM PERFORM_CAST_BBS WHERE APPROVAL = 0 AND SYSDATE <![CDATA[<]]> PERFORM_DATE ORDER BY PERFORM_SEQ 
+		)) WHERE RNUM BETWEEN #{sindex} AND #{eindex} ORDER BY RNUM
+		<!-- SELECT * FROM PERFORM_CAST_BBS 
+		WHERE PERFORM_SEQ <![CDATA[ < ]]> #{perform_seq}+7 
+		AND PERFORM_SEQ <![CDATA[ > ]]> #{perform_seq}
+		AND APPROVAL = 0 AND SYSDATE <![CDATA[<]]> PERFORM_DATE -->
+	</select>
+	
+
+	<update id="approveAf" parameterType="Integer">
+		UPDATE PERFORM_CAST_BBS
+		SET APPROVAL = 1 WHERE PERFORM_SEQ = #{seq_approve} 
+	</update>
+
+	<select id="getPerformCastInfo" parameterType="java.lang.Integer" resultType="kh.com.a.model.PerformCastBBSDto">
+		SELECT * FROM PERFORM_CAST_BBS WHERE PERFORM_SEQ=#{perform_seq}
+	</select>
+	
+</mapper>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+  
+<mapper namespace="Ticket">
+	<insert id="createTicket" parameterType="kh.com.a.model.TicketDto">
+		INSERT INTO TICKET(TICKET_SEQ,TICKETSERIAL,PERFORM_SCHEDULE_SEQ)
+		VALUES(TICKET_SEQ.NEXTVAL,#{ticket_serial},#{perform_schedule_seq})
+	</insert>
+	
+	<update id="buyTicket" parameterType="kh.com.a.model.TicketDto">
+		UPDATE TICKET SET MEMID=#{memid} 
+		WHERE TICKET_SEQ = (SELECT MIN(TICKET_SEQ) FROM TICKET) AND PERFORM_SCHEDULE_SEQ = #{perform_schedule_seq}
+	</update>
+	
+	<select id="countTicket" parameterType="kh.com.a.model.TicketDto" resultType="java.lang.Integer">
+		SELECT COUNT(*) FROM TICKET WHERE PERFORM_SCHEDULE_SEQ=#{perform_schedule_seq} AND MEMID IS NULL
+	</select>
+	
+	
+    <select id="myTicketList" parameterType="java.lang.String" resultType="kh.com.a.model.TicketParam">
+		SELECT NEW_CONSERTIMG,TITLE,TICKETSERIAL,PERFORM_DATE,t.PERFORM_SCHEDULE_SEQ PERFORM_SCHEDULE_SEQ
+		FROM TICKET t, PERFORM_SCHEDULEBBS p, PERFORM_CAST_BBS c 
+		WHERE t.PERFORM_SCHEDULE_SEQ = p.PERFORM_SCHEDULE_SEQ and p.PERFORM_SEQ = c.PERFORM_SEQ
+        AND MEMID=#{id}
+	</select>
+	
+</mapper>

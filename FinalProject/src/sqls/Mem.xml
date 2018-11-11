@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+  
+<mapper namespace="Mem">
+	<select id="login" parameterType="java.lang.String" resultType="kh.com.a.model.MemDto">
+		SELECT * FROM MEM WHERE ID=#{id}	
+	</select>
+	<update id="online" parameterType="java.lang.String">
+		UPDATE MEM SET ONLINE_CHECK=1 WHERE ID=#{id}
+	</update>
+	<update id="offline" parameterType="java.lang.String">
+		UPDATE MEM SET ONLINE_CHECK=0 WHERE ID=#{id}
+	</update>
+	<insert id="addMusition" parameterType="kh.com.a.model.MemDto">
+		INSERT INTO MEM(TEAMNAME,ID,PWD,NAME,PHONE,EMAIL,GENRE,LOCATION,BIRTH,ORI_PROFILIMG,NEW_PROFILIMG,POSITION,RIGHT,AUTH,ONLINE_CHECK,GENDER,MEM_SEQ)
+		VALUES(#{teamname},#{id},#{pwd},#{name},#{phone},#{email},#{genre},#{location},#{birth},#{ori_profilIMG},#{new_profilIMG},#{position},0,#{auth},0,#{gender},MEM_SEQ.NEXTVAL)
+	</insert>
+	<insert id="addGeneral" parameterType="kh.com.a.model.MemDto">
+		INSERT INTO MEM(ID,PWD,NAME,PHONE,EMAIL,GENRE,LOCATION,BIRTH,AUTH,ONLINE_CHECK,GENDER,MEM_SEQ)
+		VALUES(#{id},#{pwd},#{name},#{phone},#{email},#{genre},#{location},#{birth},#{auth},0,#{gender},MEM_SEQ.NEXTVAL)
+	</insert>
+	<update id="updateMusition" parameterType="kh.com.a.model.MemDto">
+		UPDATE MEM 
+		SET PWD=#{pwd},TEAMNAME=#{teamname},
+			POSITION=#{position},BIRTH=#{birth},PHONE=#{phone},
+			EMAIL=#{email},GENRE=#{genre},LOCATION=#{location},
+			NEW_PROFILIMG=#{new_profilIMG},ORI_PROFILIMG=#{ori_profilIMG} 
+		WHERE ID=#{id }
+	</update>
+	<update id="updateGeneral" parameterType="kh.com.a.model.MemDto">
+		UPDATE MEM 
+		SET PWD=#{pwd},BIRTH=#{birth},PHONE=#{phone},
+			EMAIL=#{email},GENRE=#{genre},LOCATION=#{location} 
+		WHERE ID=#{id }
+	</update>
+</mapper>

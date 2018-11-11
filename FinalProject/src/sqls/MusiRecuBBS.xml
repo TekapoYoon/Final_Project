@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+  
+<mapper namespace="MusiRecuBBS">
+
+	
+	<select id="getMusiRecuPagingList" parameterType="kh.com.a.model.Param" resultType="kh.com.a.model.MusiRecuBBSDto">
+		SELECT A.SDATE, A.EDATE, A.TITLE, A.CONTENT,A.PERFORM_SEQ, A.MUSi_RECU_SEQ
+		FROM (SELECT ROW_NUMBER() OVER(ORDER BY MUSI_RECU_SEQ DESC) AS RNUM, SDATE,EDATE,TITLE,CONTENT,PERFORM_SEQ,MUSi_RECU_SEQ
+		FROM MUSI_RECU_BBS WHERE 1=1 
+		<if test="s_category != '' and s_category != null and s_keyword != '' and s_keyword != null">
+			<if test = "s_category == 'title'">
+				AND TITLE LIKE '%'||#{s_keyword}||'%' 
+			</if>
+			<if test="s_category == 'contents'">
+				AND CONTENT LIKE '%'||#{s_keyword}||'%' 
+			</if>
+		</if>) A 
+		WHERE RNUM BETWEEN ${start} AND ${end} 
+	</select>
+	
+
+	<select id="getMusiRecuBBSCount" parameterType="kh.com.a.model.Param" resultType="java.lang.Integer">
+		SELECT NVL(COUNT(*), 0) AS CNT FROM MUSI_RECU_BBS WHERE 1=1
+		<if test="s_category != '' and s_category != null and s_keyword != '' and s_keyword != null">
+			<if test = "s_category == 'title'">
+				AND TITLE LIKE '%'||#{s_keyword}||'%' 
+			</if>
+			<if test="s_category == 'contents'">
+				AND CONTENT LIKE '%'||#{s_keyword}||'%' 
+			</if>
+		</if>
+	</select>
+	
+	<select id="getMusiRecuBBSDetail" parameterType="java.lang.Integer" resultType="kh.com.a.model.MusiRecuBBSDto">
+		SELECT * FROM MUSI_RECU_BBS WHERE MUSi_RECU_SEQ=#{musi_recu_seq}
+	</select>
+	<select id="getMusiRecuBBS_perform_Seq" parameterType="java.lang.Integer" resultType="kh.com.a.model.MusiRecuBBSDto">
+		SELECT * FROM MUSI_RECU_BBS WHERE PERFORM_SEQ=#{perform_seq}
+	</select>
+	
+	<insert id="addMusiRecuBBS" parameterType="kh.com.a.model.MusiRecuBBSDto">
+		INSERT INTO MUSI_RECU_BBS(SDATE,EDATE,TITLE,CONTENT,PERFORM_SEQ,APPROVAL,MUSI_RECU_SEQ)
+		VALUES(SYSDATE,#{edate},#{title},#{content},#{perform_seq},0,MUSI_RECU_SEQ.NEXTVAL)
+	</insert>
+	
+	<insert id="addRecuMusiInfo" parameterType="kh.com.a.model.RecuMusiInfoDto">
+		INSERT INTO RECU_MUSI_INFO(RECU_MUSI_INFO_SEQ,MUSI_RECU_SEQ, MUSIID,SELECT_MUSI) VALUES(RECU_MUSI_INFO_SEQ.NEXTVAL,#{musi_recu_seq},#{musiid},0)
+	</insert>
+	
+	<select id="getRecuMusiCount" parameterType="kh.com.a.model.RecuMusiInfoDto" resultType="java.lang.Integer">
+		SELECT COUNT(*) FROM RECU_MUSI_INFO WHERE MUSI_RECU_SEQ=#{musi_recu_seq}
+	</select>
+	
+	<select id="getRecuMusiInfo" parameterType="kh.com.a.model.RecuMusiInfoDto" resultType="java.lang.Integer">
+		SELECT COUNT(*) FROM RECU_MUSI_INFO WHERE MUSI_RECU_SEQ=#{musi_recu_seq} AND MUSIID=#{musiid}
+	</select>
+	
+	<select id="getRecuMusiInfoList" parameterType="kh.com.a.model.RecuMusiInfoDto" resultType="kh.com.a.model.RecuMusiInfoDto">
+		SELECT * FROM RECU_MUSI_INFO WHERE MUSI_RECU_SEQ=#{musi_recu_seq}
+	</select>
+	
+	<delete id="delRecuMusiInfo" parameterType="kh.com.a.model.RecuMusiInfoDto" >
+		DELETE FROM RECU_MUSI_INFO WHERE MUSi_RECU_SEQ=#{musi_recu_seq} AND MUSIID=#{musiid}
+	</delete>
+	
+	<select id="getRecuMusiDeadLineList" resultType="kh.com.a.model.MusiRecuBBSDto">
+		 SELECT A.EDATE,A.TITLE,A.MUSI_RECU_SEQ,A.PERFORM_SEQ
+      FROM (SELECT ROW_NUMBER() OVER(ORDER BY MUSI_RECU_SEQ DESC) AS RNUM,EDATE,TITLE,MUSI_RECU_SEQ,PERFORM_SEQ,APPROVAL
+            FROM MUSI_RECU_BBS
+            WHERE EDATE <![CDATA[ <= ]]> SYSDATE AND APPROVAL=0) A 
+      WHERE RNUM <![CDATA[ <= ]]> 5 ORDER BY A.EDATE DESC
+	</select>
+	
+	<select id="moreMusiRecuDeadLineList" resultType="kh.com.a.model.MusiRecuBBSDto">
+		SELECT A.EDATE,A.TITLE,A.MUSI_RECU_SEQ,A.PERFORM_SEQ
+		FROM (SELECT ROW_NUMBER() OVER(ORDER BY MUSI_RECU_SEQ DESC) AS RNUM,EDATE,TITLE,MUSI_RECU_SEQ,PERFORM_SEQ,APPROVAL
+				FROM MUSI_RECU_BBS
+				WHERE EDATE <![CDATA[ <= ]]> SYSDATE AND APPROVAL=0) A 
+		WHERE RNUM <![CDATA[ > ]]> 5
+	</select>
+	
+	<update id="musiRecuApproval" parameterType="java.lang.Integer">
+		UPDATE MUSI_RECU_BBS SET APPROVAL=1 WHERE MUSI_RECU_SEQ=#{musi_recu_seq}
+	</update>
+	
+	<update id="selectMusi" parameterType="java.lang.String">
+		UPDATE RECU_MUSI_INFO SET SELECT_MUSI=1 WHERE MUSIID=#{musiid}
+	</update>
+	
+	<select id="performSelectMusiList" parameterType="java.lang.Integer" resultType="java.lang.String">
+		SELECT TEAMNAME
+		FROM RECU_MUSI_INFO A, MEM B
+		WHERE A.MUSIID = B.ID AND SELECT_MUSI=1 AND MUSI_RECU_SEQ=#{musi_recu_seq}
+	</select>
+</mapper>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+  
+<mapper namespace="ScheduleBBS">
+
+	<!-- 비로그인 유저 -->
+	<!-- 1. Schedule BBS (시작날짜 <>= SYSDATE 조건 -> SYSDATE기준 시작날짜가 임박한 데이터 // 현재날짜에 가까운 순 정렬) -->
+    <select id="getComingSchedule" resultType="kh.com.a.model.ScheduleBBSDto">
+		SELECT * FROM SCHEDULEBBS WHERE SYSDATE 
+							<![CDATA[ < ]]> SCHEDULEDATE ORDER BY SCHEDULEDATE ASC
+	</select> 
+	
+	 
+	<!-- 비로그인 유저 --> 
+	<!-- 2. Schedule BBS (종료날짜 <>= SYSDATE 조건 -> SYSDATE기준 시작날짜가 초과했지만 종료날짜가 지나지 않은 데이터 // 종료임박 데이터 순 정렬) -->
+	<select id="getIngSchedule" resultType="kh.com.a.model.ScheduleBBSDto">
+		SELECT * FROM SCHEDULEBBS WHERE SYSDATE 
+					<![CDATA[ < ]]> SCHEDULEDATE OR SYSDATE > SCHEDULEDATE ORDER BY SCHEDULEDATE ASC
+	</select>   
+	
+	<!-- 회원 유저 -->
+	<!-- 3.  -->
+	<!-- 회원 유저 -->
+	
+	<insert id="writeBBs" parameterType="kh.com.a.model.ScheduleBBSDto">
+			INSERT INTO SCHEDULEBBS(SCHEDULEDATE, BUSKINGTIME, LOCATION, PLACE, SCHEDULE_SEQ, ID, TEAMNAME, LATI, LONGI)
+			VALUES(#{scheduledate}, #{buskingTime}, #{location}, #{place}, SCHEDULE_SEQ.NEXTVAL, #{id}, #{teamname}, #{lati}, #{longi})
+	 </insert> 
+	
+	<select id="getScheduleList" resultType="kh.com.a.model.ScheduleBBSDto">
+		SELECT SCHEDULEDATE, BUSKINGTIME, LOCATION, PLACE, SCHEDULE_SEQ, ID, TEAMNAME, LATI, LONGI 
+		FROM SCHEDULEBBS
+		ORDER BY SCHEDULEDATE 
+	</select>
+	
+	<select id="getSchedule" resultType="kh.com.a.model.ScheduleBBSDto">
+		SELECT SCHEDULEDATE, BUSKINGTIME, LOCATION, PLACE, SCHEDULE_SEQ, ID, TEAMNAME, LATI, LONGI 
+		FROM SCHEDULEBBS
+		WHERE SCHEDULE_SEQ=#{schedule_seq}
+	</select>
+	
+	
+</mapper>

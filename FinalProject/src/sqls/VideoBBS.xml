@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+  
+<mapper namespace="VideoBBS">
+	<insert id="videoBbsWrite" parameterType="kh.com.a.model.VideoBBSDto">
+	INSERT INTO VIDEOBBS(ID, TITLE, CONTENT, VIDEO, THUMBNAIL, GENRE, WDATE, READCOUNT, VIDEO_SEQ)
+	VALUES(#{id}, #{title}, #{content}, #{video}, #{thumbnail}, #{genre}, SYSDATE, 0, VIDEO_SEQ.NEXTVAL)
+	</insert>
+	
+	<insert id="like" parameterType="kh.com.a.model.Video_LikeDto">
+	INSERT INTO VIDEO_LIKE(MEMID, VIDEO_SEQ)
+	VALUES(#{memid}, #{video_seq})
+	</insert>
+	
+	<delete id="unLike" parameterType="kh.com.a.model.Video_LikeDto">
+	DELETE
+	FROM VIDEO_LIKE
+	WHERE MEMID=#{memid} AND VIDEO_SEQ=#{video_seq}
+	</delete>
+	
+	<select id="getLike" resultType="kh.com.a.model.Video_LikeDto">
+	SELECT MEMID, VIDEO_SEQ
+	FROM VIDEO_LIKE
+	WHERE MEMID=#{memid} AND VIDEO_SEQ=#{video_seq}
+	</select>
+	
+	<select id="getFollow" resultType="kh.com.a.model.FollowDto">
+	SELECT MEMID, MUSEID
+	FROM FOLLOW
+	WHERE MEMID=#{memid} AND MUSEID=#{museid}
+	</select>
+	
+	<select id="likeCount" resultType="java.lang.Integer">
+	SELECT COUNT(*)
+	FROM VIDEO_LIKE
+	WHERE VIDEO_SEQ=#{video_seq}
+	</select>
+	
+	<select id="followerConunt" parameterType="java.lang.String" resultType="java.lang.Integer">
+	SELECT COUNT(MEMID)
+	FROM FOLLOW
+	WHERE MUSEID=#{id}
+	</select>
+	
+	<select id="getVideoBbsList" resultType="kh.com.a.model.VideoBBSDto">
+	SELECT  ID, TITLE, CONTENT, VIDEO, THUMBNAIL, WDATE, READCOUNT, VIDEO_SEQ, GENRE 
+	FROM VIDEOBBS
+	ORDER BY VIDEO_SEQ ASC
+	</select>
+	
+	<select id="getVideoBbs" resultType="kh.com.a.model.VideoBBSDto">
+	SELECT ID, TITLE, CONTENT, VIDEO, THUMBNAIL, WDATE, READCOUNT, VIDEO_SEQ, GENRE
+	FROM VIDEOBBS
+	WHERE VIDEO_SEQ=#{video_seq}
+	</select>
+
+	
+	<update id="videoBbsUpdate" parameterType="kh.com.a.model.VideoBBSDto">
+	UPDATE VIDEOBBS
+	SET TITLE=#{title}, CONTENT=#{content}, WDATE=SYSDATE
+	WHERE VIDEO_SEQ=#{video_seq}
+	</update>
+	
+	<update id="incReadCount" parameterType="kh.com.a.model.VideoBBSDto">
+	UPDATE VIDEOBBS
+	SET READCOUNT=READCOUNT+1
+	WHERE VIDEO_SEQ=#{video_seq}
+	</update>
+	
+	<delete id="videoBbsDelete" parameterType="java.lang.Integer">
+		DELETE
+		FROM VIDEOBBS
+		WHERE VIDEO_SEQ=#{video_seq}
+	</delete>
+	
+	<delete id="bbsCommentDelete" parameterType="java.lang.Integer">
+		DELETE
+		FROM VIDEO_COMMENT
+		WHERE VIDEO_SEQ=#{video_seq}
+	</delete>
+	
+	<delete id="bbsLikeDelete" parameterType="java.lang.Integer">
+		DELETE
+		FROM VIDEO_LIKE
+		WHERE VIDEO_SEQ=#{video_seq}
+	</delete>
+
+
+	<select id="getVideoRank" resultType="kh.com.a.model.VideoBBSDto">
+							
+		SELECT VB.ID, VB.TITLE, VB.CONTENT, VB.VIDEO, VB.WDATE, 
+		VB.THUMBNAIL, VB.GENRE, VB.READCOUNT, VB.VIDEO_SEQ FROM VIDEOBBS VB,
+					(SELECT VIDEO_SEQ, COUNT(MEMID) TOTAL FROM VIDEO_LIKE 
+					GROUP BY VIDEO_SEQ ORDER BY COUNT(MEMID)) VL 
+					WHERE VB.VIDEO_SEQ = VL.VIDEO_SEQ ORDER BY TOTAL DESC
+							
+	</select>
+	
+	<!-- 팔로우 영상 가져오기 전 체킹  -->
+	<select id="checkfollow" parameterType="java.util.HashMap" resultType="java.lang.Integer">
+		SELECT COUNT(*) FROM FOLLOW WHERE MEMID = #{follower} AND MUSEID = #{following}
+		<!-- SELECT NVL2(FOLLOW_SEQ, FOLLOW_SEQ, 0) FROM FOLLOW WHERE MEMID = #{follower} AND MUSEID = #{following} -->
+		<!-- NVL2(FOLLOW_SEQ, FOLLOW_SEQ, 0) -->
+	</select>
+	
+	<select id="checkSeq" parameterType="java.util.HashMap" resultType="java.lang.Integer">
+		SELECT FOLLOW_SEQ FROM FOLLOW WHERE MEMID = #{follower} AND MUSEID = #{following}
+	</select>
+	<delete id="cancelFollow" parameterType="java.lang.Integer">
+		DELETE FROM FOLLOW WHERE FOLLOW_SEQ = #{seq}
+	</delete>
+	
+	<insert id="dofollow" parameterType="java.util.HashMap">
+		INSERT INTO FOLLOW VALUES(FOLLOW_SEQ.NEXTVAL, #{follower}, #{following})
+	</insert>
+	
+	<select id="getfollowingList" parameterType="kh.com.a.model.MemDto" resultType="kh.com.a.model.VideoBBSDto">
+	SELECT V.* FROM FOLLOW F, VIDEOBBS V 
+      WHERE F.MUSEID = V.ID AND F.MEMID = #{id} ORDER BY DBMS_RANDOM.VALUE
+	</select>
+	
+	<select id="latelyVideoList" parameterType="kh.com.a.model.VideoBBSDto" resultType="kh.com.a.model.VideoBBSDto">
+		SELECT * FROM VIDEOBBS ORDER BY WDATE DESC
+	</select>
+	
+	<select id="HowManyFollowers" parameterType="java.lang.String" resultType="java.lang.Integer">
+		SELECT COUNT(MEMID) FROM FOLLOW WHERE MUSEID = #{id}
+	</select>
+	
+	
+</mapper>
